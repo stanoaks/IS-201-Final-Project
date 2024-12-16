@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <a href="index.html">Resume</a>
+        <a href="byu-football.html">BYU Football</a>
+        <a href="kicking-game.html">BYU Kicking Game</a>
+    </nav>
+    <title>Football Kicking Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #4CAF50;
+            color: white;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(to bottom, #7EC850, #4CAF50);
+            overflow: hidden;
+        }
+
+        .end-zone {
+            position: absolute;
+            width: 100%;
+            height: 120px;
+            background-color: #002366;
+            top: 170px;
+            color: white;
+            font-size: 64px;
+            text-align: center;
+            line-height: 120px;
+            font-weight: bold;
+        }
+
+        .yard-line {
+            position: absolute;
+            width: 100%;
+            height: 5px;
+            background-color: white;
+        }
+
+        .yard-line:nth-child(1) { top: 190px; }
+        .yard-line:nth-child(2) { top: 290px; }
+        .yard-line:nth-child(3) { top: 390px; }
+        .yard-line:nth-child(4) { top: 490px; }
+        .yard-line:nth-child(5) { top: 590px; }
+        .yard-line:nth-child(6) { top: 690px; }
+
+        #field-goal {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 5px solid white;
+            border-top: none;
+            left: 50%;
+            top: 5px;
+            transform: translateX(-50%);
+            background: none;
+        }
+
+        #field-goal::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 80px;
+            background-color: white;
+            bottom: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #football {
+            position: absolute;
+            width: 40px;
+            height: 25px;
+            background: radial-gradient(ellipse at center, brown 60%, #5A3E26 100%);
+            border-radius: 50%;
+            cursor: pointer;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #power-meter {
+            position: absolute;
+            height: 200px;
+            width: 20px;
+            background-color: #ddd;
+            left: 10px;
+            top: 20px;
+            border: 2px solid #000;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        #power-fill {
+            width: 100%;
+            height: 0;
+            background-color: red;
+        }
+
+        #message {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 24px;
+            color: white;
+            z-index: 10;
+        }
+
+        #play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #002366;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <h1>Football Kicking Game</h1>
+    <div id="game-container">
+        <div class="end-zone">BYU</div>
+        <div class="yard-line"></div>
+        <div class="yard-line"></div>
+        <div class="yard-line"></div>
+        <div class="yard-line"></div>
+        <div class="yard-line"></div>
+        <div class="yard-line"></div>
+        <div id="field-goal"></div>
+        <div id="football"></div>
+        <div id="power-meter">
+            <div id="power-fill"></div>
+        </div>
+        <button id="play-button">Play</button>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const football = document.getElementById('football');
+        const fieldGoal = document.getElementById('field-goal');
+        const message = document.getElementById('message');
+        const playButton = document.getElementById('play-button');
+        const powerFill = document.getElementById('power-fill');
+
+        let power = 0;
+        let powerInterval;
+        let kicking = false;
+
+        // Reset the game
+        function resetGame() {
+            power = 0;
+            kicking = false;
+            message.textContent = '';
+            powerFill.style.height = '0';
+            football.style.transition = 'none';
+            football.style.bottom = '100px';
+            football.style.left = '50%';
+        }
+
+        // Start power meter
+        football.addEventListener('mousedown', () => {
+            if (kicking) return;
+            power = 0;
+            powerFill.style.height = '0';
+            powerInterval = setInterval(() => {
+                if (power < 100) {
+                    power += 4; // Faster increment
+                    powerFill.style.height = `${power}%`;
+                }
+            }, 20);
+        });
+
+        football.addEventListener('mouseup', () => {
+            if (kicking) return;
+            clearInterval(powerInterval);
+            kickBall();
+        });
+
+        // Kick the ball
+        function kickBall() {
+            kicking = true;
+            const goalTop = fieldGoal.offsetTop + fieldGoal.offsetHeight;
+            const goalCenterX = fieldGoal.offsetLeft + fieldGoal.offsetWidth / 2;
+            const distanceToGoal = window.innerHeight - goalTop;
+            
+            football.style.transition = 'all 1s ease-out';
+            football.style.bottom = `${goalTop + distanceToGoal * (power / 100)}px`;
+            football.style.left = '50%';
+
+            setTimeout(() => {
+                if (power >= 70) {
+                    message.textContent = 'You are Will Ferrin';
+                } else {
+                    message.textContent = 'You are not Will Ferrin';
+                    football.style.bottom = `${goalTop - 150}px`; // Ball falls short
+                }
+            }, 1000);
+        }
+
+        // Play button event listener
+        playButton.addEventListener('click', resetGame);
+
+        resetGame();
+    </script>
+</body>
+</html>
